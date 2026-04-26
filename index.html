@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ReliefOps — Volunteer Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #11141a;
+    --surface2: #181c24;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --accent: #22d3a0;
+    --accent2: #3b82f6;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --red-soft: rgba(239,68,68,0.12);
+    --amber-soft: rgba(245,158,11,0.12);
+    --green-soft: rgba(34,211,160,0.12);
+    --blue-soft: rgba(59,130,246,0.12);
+    --mono: 'DM Mono', monospace;
+    --sans: 'Sora', sans-serif;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Grid noise texture overlay ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(34,211,160,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(59,130,246,0.04) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── Layout ── */
+  .shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; position: relative; z-index: 1; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    display: flex; flex-direction: column;
+    position: sticky; top: 0; height: 100vh;
+  }
+
+  .logo {
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .logo-mark { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .logo-text { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .logo-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 1px; }
+
+  .nav-section { padding: 8px 12px; margin-bottom: 4px; }
+  .nav-label { font-size: 9px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; padding: 0 8px; margin-bottom: 4px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: var(--radius);
+    cursor: pointer; transition: all 0.15s;
+    color: var(--muted); font-size: 13px; font-weight: 400;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(34,211,160,0.1); color: var(--accent); }
+  .nav-item .icon { font-size: 15px; width: 20px; text-align: center; }
+  .nav-badge {
+    margin-left: auto; background: var(--danger);
+    color: #fff; font-size: 10px; font-family: var(--mono);
+    padding: 1px 6px; border-radius: 20px; font-weight: 500;
+  }
+  .nav-badge.green { background: var(--accent); color: #000; }
+
+  .sidebar-footer {
+    margin-top: auto; padding: 16px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .status-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: var(--radius);
+    background: var(--green-soft);
+    font-size: 11px; font-family: var(--mono);
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(0.85)} }
+
+  /* ── Main ── */
+  .main { padding: 28px; overflow-y: auto; }
+
+  /* ── Topbar ── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; }
+  .page-sub { color: var(--muted); font-size: 12px; margin-top: 2px; font-family: var(--mono); }
+
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+  .btn {
+    padding: 8px 16px; border-radius: var(--radius);
+    border: 1px solid var(--border2); background: var(--surface);
+    color: var(--text); font-family: var(--sans); font-size: 13px;
+    cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary {
+    background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600;
+  }
+  .btn-primary:hover { background: #1fb88d; border-color: #1fb88d; color: #000; }
+  .btn-danger { background: var(--red-soft); border-color: rgba(239,68,68,0.3); color: var(--danger); }
+
+  /* ── Stats row ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 20px;
+    position: relative; overflow: hidden; transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--border2); }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  }
+  .stat-card.green::before { background: var(--accent); }
+  .stat-card.blue::before  { background: var(--accent2); }
+  .stat-card.amber::before { background: var(--warn); }
+  .stat-card.red::before   { background: var(--danger); }
+  .stat-icon { font-size: 20px; margin-bottom: 12px; }
+  .stat-value { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; font-family: var(--mono); }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-delta { font-size: 11px; font-family: var(--mono); margin-top: 6px; }
+  .stat-delta.up { color: var(--accent); }
+  .stat-delta.down { color: var(--danger); }
+
+  /* ── Two-col layout ── */
+  .content-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+
+  /* ── Panel ── */
+  .panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+  }
+  .panel-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-title { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
+  .panel-meta { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .panel-body { padding: 16px 20px; }
+
+  /* ── Task cards ── */
+  .task-list { display: flex; flex-direction: column; gap: 10px; }
+  .task-card {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; background: var(--surface2);
+    display: grid; grid-template-columns: auto 1fr auto;
+    gap: 14px; align-items: start;
+    transition: border-color 0.15s, transform 0.15s;
+    cursor: pointer;
+    animation: slideIn 0.3s ease both;
+  }
+  @keyframes slideIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+  .task-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+
+  .priority-bar {
+    width: 3px; border-radius: 2px; align-self: stretch; min-height: 40px;
+  }
+  .p-critical { background: var(--danger); box-shadow: 0 0 8px rgba(239,68,68,0.5); }
+  .p-high     { background: var(--warn); }
+  .p-medium   { background: #a3e635; }
+  .p-low      { background: var(--muted); }
+
+  .task-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .task-meta  { font-size: 11px; color: var(--muted); font-family: var(--mono); display: flex; gap: 12px; flex-wrap: wrap; }
+  .task-skill { display: inline-flex; align-items: center; gap: 4px; }
+
+  .task-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .score-badge {
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    padding: 2px 8px; border-radius: 20px;
+  }
+  .score-critical { background: var(--red-soft); color: var(--danger); }
+  .score-high     { background: var(--amber-soft); color: var(--warn); }
+  .score-medium   { background: var(--green-soft); color: var(--accent); }
+  .score-low      { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+
+  .status-tag {
+    font-size: 10px; font-family: var(--mono); padding: 2px 8px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .s-pending  { background: var(--amber-soft); color: var(--warn); }
+  .s-assigned { background: var(--blue-soft);  color: var(--accent2); }
+  .s-done     { background: var(--green-soft); color: var(--accent); }
+
+  /* ── Volunteer roster ── */
+  .vol-list { display: flex; flex-direction: column; gap: 8px; }
+  .vol-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--surface2);
+    transition: border-color 0.15s;
+  }
+  .vol-item:hover { border-color: var(--border2); }
+  .vol-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+  }
+  .vol-name { font-size: 13px; font-weight: 500; }
+  .vol-meta { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .vol-status { margin-left: auto; }
+  .avail-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .avail-dot.free { background: var(--accent); box-shadow: 0 0 6px rgba(34,211,160,0.6); }
+  .avail-dot.busy { background: var(--muted); }
+
+  /* ── AI Suggestions panel ── */
+  .ai-panel { margin-top: 20px; }
+  .suggestion-list { display: flex; flex-direction: column; gap: 8px; }
+  .suggestion {
+    padding: 12px 14px; border-radius: var(--radius);
+    border: 1px solid rgba(34,211,160,0.2); background: rgba(34,211,160,0.04);
+    font-size: 12px; line-height: 1.6;
+    animation: fadeIn 0.4s ease both;
+  }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .suggestion strong { color: var(--accent); font-weight: 600; }
+  .sug-action {
+    display: flex; gap: 8px; margin-top: 8px;
+  }
+  .sug-btn {
+    font-size: 11px; padding: 4px 10px; border-radius: 6px;
+    cursor: pointer; border: none; font-family: var(--sans); font-weight: 500;
+    transition: opacity 0.15s;
+  }
+  .sug-btn:hover { opacity: 0.8; }
+  .sug-btn.apply { background: var(--accent); color: #000; }
+  .sug-btn.dismiss { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+
+  /* ── Add Task Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius-lg); padding: 28px; width: 480px;
+    transform: translateY(12px); transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal { transform: none; }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
+  .form-row { margin-bottom: 16px; }
+  .form-label { font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: block; }
+  .form-input, .form-select {
+    width: 100%; padding: 9px 12px; border-radius: var(--radius);
+    border: 1px solid var(--border2); background: var(--surface2);
+    color: var(--text); font-family: var(--sans); font-size: 13px;
+    outline: none; transition: border-color 0.15s;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+  .form-select option { background: var(--surface2); }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  /* ── Toast ── */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+  .toast {
+    padding: 12px 16px; border-radius: var(--radius); font-size: 13px;
+    display: flex; align-items: center; gap: 10px;
+    animation: toastIn 0.3s ease both; max-width: 320px;
+    border: 1px solid var(--border2);
+  }
+  @keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+  .toast.success { background: var(--surface); border-color: rgba(34,211,160,0.4); }
+  .toast.error   { background: var(--surface); border-color: rgba(239,68,68,0.4); }
+  .toast-icon { font-size: 16px; }
+
+  /* ── Live indicator ── */
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(34,211,160,0.3);
+    background: var(--green-soft);
+  }
+  .live-badge .dot { background: var(--accent); width: 6px; height: 6px; }
+
+  /* ── Empty state ── */
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-icon { font-size: 32px; margin-bottom: 8px; }
+  .empty p { font-size: 13px; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+  .tab {
+    padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid transparent; transition: all 0.15s;
+    color: var(--muted); background: none;
+  }
+  .tab.active { background: var(--surface2); border-color: var(--border2); color: var(--text); }
+  .tab:hover:not(.active) { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">
+        <div class="logo-icon">🛡</div>
+        <div>
+          <div class="logo-text">ReliefOps</div>
+          <div class="logo-sub">Command Center v1.0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Operations</div>
+      <button class="nav-item active" onclick="setPage('dashboard')">
+        <span class="icon">⬡</span> Dashboard
+      </button>
+      <button class="nav-item" onclick="openModal()">
+        <span class="icon">＋</span> Add Task
+        <span class="nav-badge" id="pending-count">0</span>
+      </button>
+      <button class="nav-item" onclick="setPage('volunteers')">
+        <span class="icon">◎</span> Volunteers
+        <span class="nav-badge green" id="avail-count">0</span>
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">System</div>
+      <button class="nav-item" onclick="triggerReassign()">
+        <span class="icon">↺</span> Re-assign all
+      </button>
+      <button class="nav-item" onclick="loadData()">
+        <span class="icon">⟳</span> Refresh
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="status-chip">
+        <div class="dot"></div>
+        <span style="font-size:11px">API connected</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Operations Dashboard</div>
+        <div class="page-sub">Real-time volunteer & task management</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-badge"><div class="dot"></div>LIVE</div>
+        <button class="btn btn-primary" onclick="openModal()">＋ New Task</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card green">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value" id="stat-volunteers">—</div>
+        <div class="stat-label">Total Volunteers</div>
+        <div class="stat-delta up" id="stat-avail-delta">— available</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-icon">📋</div>
+        <div class="stat-value" id="stat-tasks">—</div>
+        <div class="stat-label">Active Tasks</div>
+        <div class="stat-delta" id="stat-pending-delta" style="color:var(--warn)">— pending</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon">🔴</div>
+        <div class="stat-value" id="stat-critical">—</div>
+        <div class="stat-label">Critical Priority</div>
+        <div class="stat-delta down">Needs immediate action</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-icon">✓</div>
+        <div class="stat-value" id="stat-assigned">—</div>
+        <div class="stat-label">Assigned Tasks</div>
+        <div class="stat-delta up">Volunteers deployed</div>
+      </div>
+    </div>
+
+    <!-- Content grid -->
+    <div class="content-grid">
+      <!-- Left: Task board -->
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Task Priority Queue</div>
+            <div class="tabs">
+              <button class="tab active" onclick="filterTasks('all', this)">All</button>
+              <button class="tab" onclick="filterTasks('pending', this)">Pending</button>
+              <button class="tab" onclick="filterTasks('assigned', this)">Assigned</button>
+              <button class="tab" onclick="filterTasks('done', this)">Done</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="task-list" id="task-list">
+              <div class="empty"><div class="empty-icon">📭</div><p>No tasks yet. Add one to get started.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Suggestions -->
+        <div class="panel ai-panel">
+          <div class="panel-header">
+            <div class="panel-title">🤖 AI Suggestions</div>
+            <div class="panel-meta" id="sug-time">—</div>
+          </div>
+          <div class="panel-body">
+            <div class="suggestion-list" id="suggestion-list">
+              <div class="empty"><div class="empty-icon">💡</div><p>Suggestions appear after tasks are created.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Volunteers -->
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Volunteer Roster</div>
+            <div class="panel-meta" id="vol-meta">Loading...</div>
+          </div>
+          <div class="panel-body">
+            <div class="vol-list" id="vol-list">
+              <div class="empty"><div class="empty-icon">👤</div><p>No volunteers registered.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">Add New Task</div>
+    <div class="form-row">
+      <label class="form-label">Task title</label>
+      <input class="form-input" id="f-title" placeholder="e.g. Medical triage at sector 4" />
+    </div>
+    <div class="form-row">
+      <label class="form-label">Required skill</label>
+      <select class="form-select" id="f-skill">
+        <option value="first_aid">First Aid</option>
+        <option value="driving">Driving</option>
+        <option value="rescue">Rescue</option>
+        <option value="logistics">Logistics</option>
+        <option value="communication">Communication</option>
+        <option value="counseling">Counseling</option>
+      </select>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0">
+        <label class="form-label">Urgency (1–5)</label>
+        <input class="form-input" id="f-urgency" type="number" min="1" max="5" value="3" />
+      </div>
+      <div class="form-row" style="margin:0">
+        <label class="form-label">Lives at risk</label>
+        <input class="form-input" id="f-lives" type="number" min="0" value="10" />
+      </div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0">
+        <label class="form-label">Latitude</label>
+        <input class="form-input" id="f-lat" type="number" step="0.0001" value="12.9716" />
+      </div>
+      <div class="form-row" style="margin:0">
+        <label class="form-label">Longitude</label>
+        <input class="form-input" id="f-lon" type="number" step="0.0001" value="77.5946" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitTask()">Create Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ── Config ──────────────────────────────────────────────
+const API = 'http://localhost:8000';     // ← your FastAPI URL
+let ws = null;
+let allTasks = [];
+let allVolunteers = [];
+let currentFilter = 'all';
+
+// ── Mock data (used when API is offline) ─────────────────
+const MOCK_VOLUNTEERS = [
+  { id:1, name:'Ananya Krishnan', skills:'first_aid,rescue', latitude:12.9716, longitude:77.5946, available:true },
+  { id:2, name:'Rahul Mehta',     skills:'driving,logistics', latitude:12.9783, longitude:77.6408, available:false },
+  { id:3, name:'Priya Nair',      skills:'counseling,communication', latitude:12.9352, longitude:77.6245, available:true },
+  { id:4, name:'Aditya Sharma',   skills:'first_aid,driving', latitude:12.9800, longitude:77.5900, available:true },
+  { id:5, name:'Meena Rao',       skills:'rescue,logistics', latitude:12.9650, longitude:77.6100, available:false },
+];
+const MOCK_TASKS = [
+  { id:1, title:'Flood rescue – Koramangala', required_skill:'rescue', urgency:5, lives_at_risk:40, status:'assigned', assigned_to:1, priority_score:0.92, latitude:12.9352, longitude:77.6245 },
+  { id:2, title:'Medical triage – Jayanagar', required_skill:'first_aid', urgency:4, lives_at_risk:20, status:'pending', assigned_to:null, priority_score:0.74, latitude:12.9250, longitude:77.5938 },
+  { id:3, title:'Food distribution – BTM',    required_skill:'logistics', urgency:3, lives_at_risk:60, status:'assigned', assigned_to:2, priority_score:0.66, latitude:12.9165, longitude:77.6101 },
+  { id:4, title:'Psychosocial support – HSR', required_skill:'counseling', urgency:2, lives_at_risk:8, status:'pending', assigned_to:null, priority_score:0.34, latitude:12.9081, longitude:77.6476 },
+  { id:5, title:'Debris clearing – Whitefield', required_skill:'rescue', urgency:3, lives_at_risk:5, status:'done', assigned_to:5, priority_score:0.51, latitude:12.9698, longitude:77.7500 },
+];
+
+// ── Utilities ────────────────────────────────────────────
+function toast(msg, type='success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span class="toast-icon">${type==='success'?'✓':'⚠'}</span> ${msg}`;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+function priorityClass(score) {
+  if (score >= 0.8) return 'critical';
+  if (score >= 0.6) return 'high';
+  if (score >= 0.4) return 'medium';
+  return 'low';
+}
+function priorityLabel(score) {
+  if (score >= 0.8) return 'Critical';
+  if (score >= 0.6) return 'High';
+  if (score >= 0.4) return 'Medium';
+  return 'Low';
+}
+
+const AVATARS = ['#e74c3c','#3498db','#2ecc71','#9b59b6','#f39c12','#1abc9c'];
+const SKILL_EMOJI = { first_aid:'🩺', driving:'🚗', rescue:'⛑', logistics:'📦', communication:'📡', counseling:'💬' };
+
+// ── Render Tasks ─────────────────────────────────────────
+function renderTasks() {
+  const list = document.getElementById('task-list');
+  let tasks = allTasks;
+  if (currentFilter !== 'all') tasks = tasks.filter(t => t.status === currentFilter);
+  tasks = [...tasks].sort((a,b) => b.priority_score - a.priority_score);
+
+  if (!tasks.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">✓</div><p>No tasks in this view.</p></div>';
+    return;
+  }
+
+  list.innerHTML = tasks.map((task, i) => {
+    const pc  = priorityClass(task.priority_score);
+    const vol = task.assigned_to ? allVolunteers.find(v => v.id === task.assigned_to) : null;
+    return `
+    <div class="task-card" style="animation-delay:${i*0.04}s" onclick="taskDetail(${task.id})">
+      <div class="priority-bar p-${pc}"></div>
+      <div>
+        <div class="task-title">${task.title}</div>
+        <div class="task-meta">
+          <span class="task-skill">${SKILL_EMOJI[task.required_skill] || '•'} ${task.required_skill.replace('_',' ')}</span>
+          <span>Urgency ${task.urgency}/5</span>
+          <span>⚠ ${task.lives_at_risk} lives</span>
+          ${vol ? `<span>👤 ${vol.name}</span>` : ''}
+        </div>
+      </div>
+      <div class="task-right">
+        <div class="score-badge score-${pc}">${(task.priority_score*100).toFixed(0)}</div>
+        <div class="status-tag s-${task.status}">${task.status}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Render Volunteers ────────────────────────────────────
+function renderVolunteers() {
+  const list = document.getElementById('vol-list');
+  const avail = allVolunteers.filter(v => v.available).length;
+  document.getElementById('vol-meta').textContent = `${avail} of ${allVolunteers.length} available`;
+  document.getElementById('avail-count').textContent = avail;
+
+  if (!allVolunteers.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">👤</div><p>No volunteers registered.</p></div>';
+    return;
+  }
+
+  list.innerHTML = allVolunteers.map((v, i) => {
+    const initials = v.name.split(' ').map(w=>w[0]).join('').slice(0,2);
+    const color = AVATARS[i % AVATARS.length];
+    return `
+    <div class="vol-item">
+      <div class="vol-avatar" style="background:${color}20;color:${color}">${initials}</div>
+      <div>
+        <div class="vol-name">${v.name}</div>
+        <div class="vol-meta">${v.skills.replace(/,/g,' · ')}</div>
+      </div>
+      <div class="vol-status">
+        <div class="avail-dot ${v.available?'free':'busy'}" title="${v.available?'Available':'On task'}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Render Stats ─────────────────────────────────────────
+function renderStats() {
+  const avail    = allVolunteers.filter(v => v.available).length;
+  const pending  = allTasks.filter(t => t.status === 'pending').length;
+  const assigned = allTasks.filter(t => t.status === 'assigned').length;
+  const critical = allTasks.filter(t => t.priority_score >= 0.8).length;
+
+  document.getElementById('stat-volunteers').textContent  = allVolunteers.length;
+  document.getElementById('stat-tasks').textContent       = allTasks.filter(t => t.status !== 'done').length;
+  document.getElementById('stat-critical').textContent    = critical;
+  document.getElementById('stat-assigned').textContent    = assigned;
+  document.getElementById('stat-avail-delta').textContent = `${avail} available`;
+  document.getElementById('stat-pending-delta').textContent = `${pending} pending`;
+  document.getElementById('pending-count').textContent    = pending;
+}
+
+// ── AI Suggestions ───────────────────────────────────────
+function renderSuggestions() {
+  const list = document.getElementById('suggestion-list');
+  const suggestions = generateSuggestions();
+  document.getElementById('sug-time').textContent = 'Updated ' + new Date().toLocaleTimeString();
+
+  if (!suggestions.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><p>All looks good. No immediate action required.</p></div>';
+    return;
+  }
+
+  list.innerHTML = suggestions.map(s => `
+    <div class="suggestion">
+      ${s.message}
+      <div class="sug-action">
+        <button class="sug-btn apply" onclick="applySuggestion('${s.action}', ${JSON.stringify(s.payload).replace(/"/g,'&quot;')})">Apply</button>
+        <button class="sug-btn dismiss" onclick="this.closest('.suggestion').remove()">Dismiss</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function generateSuggestions() {
+  const suggestions = [];
+  const criticalPending = allTasks.filter(t => t.status === 'pending' && t.priority_score >= 0.8);
+  const freeVols = allVolunteers.filter(v => v.available);
+
+  criticalPending.forEach(task => {
+    const match = freeVols.find(v => v.skills.includes(task.required_skill));
+    if (match) {
+      suggestions.push({
+        message: `<strong>Critical task unassigned:</strong> "${task.title}" needs a ${task.required_skill.replace('_',' ')} volunteer. <strong>${match.name}</strong> is available and matches.`,
+        action: 'assign',
+        payload: { taskId: task.id, volId: match.id }
+      });
+    }
+  });
+
+  const overloaded = allVolunteers.filter(v => !v.available);
+  if (overloaded.length === allVolunteers.length && criticalPending.length) {
+    suggestions.push({
+      message: `<strong>All volunteers are busy.</strong> ${criticalPending.length} critical task(s) remain unassigned. Consider recruiting more first-aid or rescue volunteers.`,
+      action: 'alert',
+      payload: {}
+    });
+  }
+
+  const doneTasks = allTasks.filter(t => t.status === 'done');
+  const freeAfterDone = allVolunteers.filter(v => !v.available);
+  if (doneTasks.length > 0 && freeAfterDone.length > 0) {
+    const nextPending = allTasks.find(t => t.status === 'pending');
+    if (nextPending) {
+      suggestions.push({
+        message: `<strong>Volunteers freed up.</strong> "${nextPending.title}" is next in priority queue. Re-run assignment to redeploy.`,
+        action: 'reassign',
+        payload: {}
+      });
+    }
+  }
+
+  return suggestions.slice(0, 3);
+}
+
+function applySuggestion(action, payload) {
+  if (action === 'assign') {
+    const task = allTasks.find(t => t.id === payload.taskId);
+    const vol  = allVolunteers.find(v => v.id === payload.volId);
+    if (task && vol) {
+      task.status = 'assigned';
+      task.assigned_to = vol.id;
+      vol.available = false;
+      renderAll();
+      toast(`Assigned ${vol.name} to "${task.title}"`, 'success');
+    }
+  }
+  if (action === 'reassign') {
+    triggerReassign();
+  }
+  if (action === 'alert') {
+    toast('Alert noted. Manual recruitment required.', 'error');
+  }
+}
+
+// ── Local re-assignment ───────────────────────────────────
+function triggerReassign() {
+  const pending = [...allTasks]
+    .filter(t => t.status === 'pending')
+    .sort((a,b) => b.priority_score - a.priority_score);
+
+  let assigned = 0;
+  pending.forEach(task => {
+    const freeVols = allVolunteers.filter(v => v.available && v.skills.includes(task.required_skill));
+    if (freeVols.length) {
+      const best = freeVols[0]; // first match (extend with proximity scoring)
+      task.status = 'assigned';
+      task.assigned_to = best.id;
+      best.available = false;
+      assigned++;
+    }
+  });
+
+  renderAll();
+  toast(`Re-assignment complete. ${assigned} new assignment(s) made.`, 'success');
+}
+
+// ── Modal ─────────────────────────────────────────────────
+function openModal() { document.getElementById('modal-overlay').classList.add('open'); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
+
+async function submitTask() {
+  const title  = document.getElementById('f-title').value.trim();
+  const skill  = document.getElementById('f-skill').value;
+  const urgency= parseInt(document.getElementById('f-urgency').value);
+  const lives  = parseInt(document.getElementById('f-lives').value);
+  const lat    = parseFloat(document.getElementById('f-lat').value);
+  const lon    = parseFloat(document.getElementById('f-lon').value);
+
+  if (!title) { toast('Please enter a task title', 'error'); return; }
+
+  const priority_score = Math.round((urgency/5*0.5 + Math.min(lives/100,1)*0.3 + 0.2) * 1000) / 1000;
+  const newTask = {
+    id: Date.now(),
+    title, required_skill: skill, urgency, lives_at_risk: lives,
+    latitude: lat, longitude: lon,
+    status: 'pending', assigned_to: null, priority_score
+  };
+
+  // Try API, fall back to local
+  try {
+    const res = await fetch(`${API}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, required_skill:skill, urgency, lives_at_risk:lives, latitude:lat, longitude:lon })
+    });
+    const data = await res.json();
+    allTasks.push(data);
+  } catch {
+    allTasks.push(newTask);
+  }
+
+  closeModal();
+  document.getElementById('f-title').value = '';
+  renderAll();
+  toast(`Task "${title}" created (priority ${(priority_score*100).toFixed(0)})`, 'success');
+}
+
+// ── Filter tabs ───────────────────────────────────────────
+function filterTasks(filter, el) {
+  currentFilter = filter;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderTasks();
+}
+
+function taskDetail(id) {
+  const t = allTasks.find(x => x.id === id);
+  if (t) toast(`Priority score: ${(t.priority_score*100).toFixed(0)} · Urgency ${t.urgency}/5 · ${t.lives_at_risk} lives at risk`, 'success');
+}
+
+// ── Load data ─────────────────────────────────────────────
+async function loadData() {
+  try {
+    const [tRes, vRes] = await Promise.all([
+      fetch(`${API}/assignments`),
+      fetch(`${API}/volunteers`)
+    ]);
+    allTasks      = await tRes.json();
+    allVolunteers = await vRes.json();
+    toast('Data refreshed from API', 'success');
+  } catch {
+    // Use mock data if API offline
+    allTasks      = [...MOCK_TASKS];
+    allVolunteers = [...MOCK_VOLUNTEERS];
+  }
+  renderAll();
+}
+
+function renderAll() {
+  renderStats();
+  renderTasks();
+  renderVolunteers();
+  renderSuggestions();
+}
+
+// ── WebSocket live connection ─────────────────────────────
+function connectWS() {
+  try {
+    ws = new WebSocket(`ws://${API.replace('http://','')}/live`);
+    ws.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      if (data.tasks)      allTasks      = data.tasks;
+      if (data.volunteers) allVolunteers = data.volunteers;
+      renderAll();
+    };
+    ws.onerror = () => {}; // silent fail when API offline
+  } catch {}
+}
+
+// ── Init ──────────────────────────────────────────────────
+loadData();
+connectWS();
+setInterval(renderSuggestions, 30000); // refresh suggestions every 30s
+</script>
+</body>
+</html>
