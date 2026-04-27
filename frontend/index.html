@@ -215,6 +215,7 @@
   .s-pending  { background: var(--amber-soft); color: var(--warn); }
   .s-assigned { background: var(--blue-soft);  color: var(--accent2); }
   .s-done     { background: var(--green-soft); color: var(--accent); }
+  .s-invite_pending { background: var(--amber-soft); color: var(--warn); }
 
   /* ── Volunteer roster ── */
   .vol-list { display: flex; flex-direction: column; gap: 8px; }
@@ -328,11 +329,177 @@
   }
   .tab.active { background: var(--surface2); border-color: var(--border2); color: var(--text); }
   .tab:hover:not(.active) { color: var(--text); }
+
+  .hidden { display: none !important; }
+
+  /* Login */
+  .login-screen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 28px; position: relative; z-index: 1;
+  }
+  .login-card {
+    width: min(760px, 100%); background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 28px; box-shadow: 0 24px 80px rgba(0,0,0,0.28);
+  }
+  .login-head { text-align: center; margin-bottom: 24px; }
+  .login-title { font-size: 24px; font-weight: 700; letter-spacing: -0.03em; }
+  .login-sub { color: var(--muted); font-family: var(--mono); font-size: 12px; margin-top: 6px; }
+  .role-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 22px; }
+  .role-card {
+    border: 1px solid var(--border); background: var(--surface2);
+    border-radius: var(--radius); padding: 18px; text-align: left;
+    color: var(--text); cursor: pointer; transition: border-color 0.15s, transform 0.15s;
+    font-family: var(--sans);
+  }
+  .role-card:hover, .role-card.selected { border-color: var(--accent); transform: translateY(-1px); }
+  .role-icon { font-size: 24px; margin-bottom: 10px; }
+  .role-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .role-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .login-form { display: grid; gap: 14px; }
+  .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  .auth-tab {
+    justify-content: center; background: var(--surface2);
+  }
+  .auth-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+  .login-error { min-height: 18px; color: var(--danger); font-size: 12px; font-family: var(--mono); }
+  .checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .skill-check {
+    display: flex; align-items: center; gap: 8px; padding: 9px 10px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface2); color: var(--text); font-size: 12px; cursor: pointer;
+  }
+  .skill-check input { accent-color: var(--accent); }
+  .profile-skill-editor { display: grid; gap: 10px; margin-top: 8px; }
+  .role-chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(34,211,160,0.3); background: var(--green-soft);
+    color: var(--accent); border-radius: 999px; padding: 3px 8px;
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+  }
+  .sidebar-role { margin-top: 10px; }
+  .logout-btn { margin-top: 10px; justify-content: center; }
+
+  /* Volunteer portal */
+  .volunteer-main { max-width: 880px; margin: 0 auto; width: 100%; }
+  .volunteer-stack { display: grid; gap: 18px; }
+  .assigned-card {
+    border: 1px solid rgba(34,211,160,0.24); background: var(--surface);
+    border-radius: var(--radius-lg); padding: 22px;
+  }
+  .assigned-title { font-size: 24px; font-weight: 700; letter-spacing: -0.03em; margin: 10px 0; }
+  .assigned-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .info-pill {
+    border: 1px solid var(--border); background: var(--surface2);
+    color: var(--muted); border-radius: 999px; padding: 5px 10px;
+    font-family: var(--mono); font-size: 11px;
+  }
+  .profile-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .profile-summary { display: grid; gap: 16px; }
+  .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .mini-stat {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+  }
+  .mini-stat-value { font-size: 24px; font-weight: 700; font-family: var(--mono); }
+  .mini-stat-label { color: var(--muted); font-size: 10px; font-family: var(--mono); text-transform: uppercase; margin-top: 4px; }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .skill-tag {
+    background: var(--green-soft); color: var(--accent); border: 1px solid rgba(34,211,160,0.2);
+    border-radius: 999px; padding: 4px 9px; font-size: 11px; font-family: var(--mono);
+  }
+  .switch { position: relative; display: inline-flex; width: 48px; height: 26px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; cursor: pointer; inset: 0; background: var(--surface2);
+    border: 1px solid var(--border2); border-radius: 999px; transition: 0.15s;
+  }
+  .slider::before {
+    content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px;
+    background: var(--muted); border-radius: 50%; transition: 0.15s;
+  }
+  .switch input:checked + .slider { background: var(--green-soft); border-color: rgba(34,211,160,0.35); }
+  .switch input:checked + .slider::before { transform: translateX(22px); background: var(--accent); }
+  .nearby-list, .activity-list { display: grid; gap: 10px; }
+  .nearby-row, .activity-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    border: 1px solid var(--border); background: var(--surface2);
+    border-radius: var(--radius); padding: 12px 14px;
+  }
+  .row-title { font-size: 13px; font-weight: 600; }
+  .row-meta { color: var(--muted); font-family: var(--mono); font-size: 11px; margin-top: 3px; }
+  .s-in_progress { background: var(--blue-soft); color: var(--accent2); }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .stats-row, .content-grid, .role-grid { grid-template-columns: 1fr; }
+    .main { padding: 20px; }
+    .topbar, .profile-row { align-items: flex-start; flex-direction: column; }
+    .topbar-actions { flex-wrap: wrap; }
+    .checkbox-grid { grid-template-columns: 1fr; }
+    .profile-stats { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
-<div class="shell">
+<section class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-head">
+      <div class="logo-mark" style="justify-content:center;margin-bottom:14px">
+        <div class="logo-icon">+</div>
+        <div>
+          <div class="logo-text">ReliefOps</div>
+          <div class="logo-sub">Session login</div>
+        </div>
+      </div>
+      <div class="login-title">Choose your workspace</div>
+      <div class="login-sub" id="auth-subtitle">Create an account to start saving your session</div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="btn auth-tab active" type="button" id="signup-tab" onclick="setAuthMode('signup')">Signup</button>
+      <button class="btn auth-tab" type="button" id="login-tab" onclick="setAuthMode('login')">Login</button>
+    </div>
+
+    <div class="role-grid">
+      <button class="role-card selected" type="button" data-role="ngo" onclick="selectRole('ngo')">
+        <div class="role-icon">+</div>
+        <div class="role-title">NGO Coordinator</div>
+        <div class="role-desc">Manage priority tasks, volunteer assignment, roster status, and AI suggestions.</div>
+      </button>
+      <button class="role-card" type="button" data-role="volunteer" onclick="selectRole('volunteer')">
+        <div class="role-icon">*</div>
+        <div class="role-title">Volunteer</div>
+        <div class="role-desc">View your current assignment, update availability, and mark task progress.</div>
+      </button>
+    </div>
+
+    <form class="login-form" onsubmit="login(event)">
+      <div>
+        <label class="form-label" id="login-name-label">Name</label>
+        <input class="form-input" id="login-name" type="text" autocomplete="name" placeholder="Your name or organization" />
+      </div>
+      <div id="login-email-row">
+        <label class="form-label">Email</label>
+        <input class="form-input" id="login-email" type="email" autocomplete="username" placeholder="you@example.com" />
+      </div>
+      <div>
+        <label class="form-label">Password</label>
+        <input class="form-input" id="login-password" type="password" autocomplete="current-password" placeholder="Any password" />
+      </div>
+      <div class="hidden" id="volunteer-skills-row">
+        <label class="form-label">My skills</label>
+        <div class="checkbox-grid" id="login-skills"></div>
+      </div>
+      <div class="login-error" id="login-error"></div>
+      <button class="btn btn-primary" type="submit" id="auth-submit" style="justify-content:center">Signup</button>
+    </form>
+  </div>
+</section>
+
+<div class="shell hidden" id="ngo-dashboard">
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="logo">
@@ -340,7 +507,8 @@
         <div class="logo-icon">🛡</div>
         <div>
           <div class="logo-text">ReliefOps</div>
-          <div class="logo-sub">Command Center v1.0</div>
+          <div class="logo-sub">NGO Command Center</div>
+          <div class="sidebar-role"><span class="role-chip">NGO</span></div>
         </div>
       </div>
     </div>
@@ -373,8 +541,9 @@
     <div class="sidebar-footer">
       <div class="status-chip">
         <div class="dot"></div>
-        <span style="font-size:11px">API connected</span>
+        <span style="font-size:11px">Live session</span>
       </div>
+      <button class="btn logout-btn" onclick="logout()">Logout</button>
     </div>
   </aside>
 
@@ -472,6 +641,81 @@
   </main>
 </div>
 
+<div class="shell hidden" id="volunteer-dashboard">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">
+        <div class="logo-icon">*</div>
+        <div>
+          <div class="logo-text">ReliefOps</div>
+          <div class="logo-sub">Volunteer Portal</div>
+          <div class="sidebar-role"><span class="role-chip">Volunteer</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">My Shift</div>
+      <button class="nav-item volunteer-nav active" onclick="setVolunteerView('task', this)"><span class="icon">+</span> Assigned Task</button>
+      <button class="nav-item volunteer-nav" onclick="setVolunteerView('profile', this)"><span class="icon">*</span> Profile</button>
+      <button class="nav-item volunteer-nav" onclick="setVolunteerView('nearby', this)"><span class="icon">=</span> Nearby Tasks</button>
+      <button class="nav-item volunteer-nav" onclick="setVolunteerView('activity', this)"><span class="icon">✓</span> Activity Log</button>
+    </div>
+    <div class="sidebar-footer">
+      <div class="status-chip">
+        <div class="dot"></div>
+        <span style="font-size:11px">Session active</span>
+      </div>
+      <button class="btn logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="volunteer-main">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Volunteer Portal</div>
+          <div class="page-sub">Assignment status and field activity</div>
+        </div>
+        <div class="topbar-actions">
+          <div class="live-badge"><div class="dot"></div>LIVE</div>
+        </div>
+      </div>
+
+      <div class="volunteer-stack">
+        <section class="assigned-card volunteer-section" data-volunteer-view="task" id="my-task-card"></section>
+
+        <section class="panel volunteer-section" data-volunteer-view="profile">
+          <div class="panel-header">
+            <div class="panel-title">My Profile</div>
+            <div class="panel-meta" id="profile-state">Available</div>
+          </div>
+          <div class="panel-body" id="profile-panel"></div>
+        </section>
+
+        <section class="panel volunteer-section" data-volunteer-view="nearby">
+          <div class="panel-header">
+            <div class="panel-title">Nearby Tasks</div>
+            <div class="panel-meta">Read-only priority queue</div>
+          </div>
+          <div class="panel-body">
+            <div class="nearby-list" id="nearby-list"></div>
+          </div>
+        </section>
+
+        <section class="panel volunteer-section" data-volunteer-view="activity">
+          <div class="panel-header">
+            <div class="panel-title">My Activity Log</div>
+            <div class="panel-meta" id="activity-count">0 complete</div>
+          </div>
+          <div class="panel-body">
+            <div class="activity-list" id="activity-list"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
 <!-- Add Task Modal -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
@@ -523,29 +767,59 @@
 
 <script>
 // ── Config ──────────────────────────────────────────────
-const API = 'http://localhost:8000';     // ← your FastAPI URL
+const API = 'http://localhost:8000';
 let ws = null;
+let allNgos = [];
 let allTasks = [];
 let allVolunteers = [];
 let currentFilter = 'all';
+let authMode = 'signup';
+let selectedRole = 'ngo';
+let currentRole = null;
+let currentNgoId = null;
+let loggedInVolunteerId = null;
+let currentUserEmail = null;
+let currentVolunteerView = 'task';
+let volunteerActivityLog = [];
+let dismissedSuggestionIds = [];
+const SKILL_OPTIONS = [
+  { value:'first_aid', label:'First Aid' },
+  { value:'driving', label:'Driving' },
+  { value:'rescue', label:'Rescue' },
+  { value:'logistics', label:'Logistics' },
+  { value:'communication', label:'Communication' },
+  { value:'counseling', label:'Counseling' }
+];
 
-// ── Mock data (used when API is offline) ─────────────────
-const MOCK_VOLUNTEERS = [
-  { id:1, name:'Ananya Krishnan', skills:'first_aid,rescue', latitude:12.9716, longitude:77.5946, available:true },
-  { id:2, name:'Rahul Mehta',     skills:'driving,logistics', latitude:12.9783, longitude:77.6408, available:false },
-  { id:3, name:'Priya Nair',      skills:'counseling,communication', latitude:12.9352, longitude:77.6245, available:true },
-  { id:4, name:'Aditya Sharma',   skills:'first_aid,driving', latitude:12.9800, longitude:77.5900, available:true },
-  { id:5, name:'Meena Rao',       skills:'rescue,logistics', latitude:12.9650, longitude:77.6100, available:false },
-];
-const MOCK_TASKS = [
-  { id:1, title:'Flood rescue – Koramangala', required_skill:'rescue', urgency:5, lives_at_risk:40, status:'assigned', assigned_to:1, priority_score:0.92, latitude:12.9352, longitude:77.6245 },
-  { id:2, title:'Medical triage – Jayanagar', required_skill:'first_aid', urgency:4, lives_at_risk:20, status:'pending', assigned_to:null, priority_score:0.74, latitude:12.9250, longitude:77.5938 },
-  { id:3, title:'Food distribution – BTM',    required_skill:'logistics', urgency:3, lives_at_risk:60, status:'assigned', assigned_to:2, priority_score:0.66, latitude:12.9165, longitude:77.6101 },
-  { id:4, title:'Psychosocial support – HSR', required_skill:'counseling', urgency:2, lives_at_risk:8, status:'pending', assigned_to:null, priority_score:0.34, latitude:12.9081, longitude:77.6476 },
-  { id:5, title:'Debris clearing – Whitefield', required_skill:'rescue', urgency:3, lives_at_risk:5, status:'done', assigned_to:5, priority_score:0.51, latitude:12.9698, longitude:77.7500 },
-];
+// All data starts empty and lives only in JS memory for this prototype.
 
 // ── Utilities ────────────────────────────────────────────
+function saveState() {
+  localStorage.setItem('reliefOpsState', JSON.stringify({
+    allNgos,
+    allTasks,
+    allVolunteers,
+    volunteerActivityLog
+  }));
+}
+
+function loadState() {
+  const raw = localStorage.getItem('reliefOpsState');
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    allNgos = data.allNgos || [];
+    allTasks = data.allTasks || [];
+    allVolunteers = data.allVolunteers || [];
+    volunteerActivityLog = data.volunteerActivityLog || [];
+  } catch {
+    allNgos = [];
+    allTasks = [];
+    allVolunteers = [];
+    volunteerActivityLog = [];
+  }
+}
+
 function toast(msg, type='success') {
   const t = document.createElement('div');
   t.className = `toast ${type}`;
@@ -570,11 +844,167 @@ function priorityLabel(score) {
 const AVATARS = ['#e74c3c','#3498db','#2ecc71','#9b59b6','#f39c12','#1abc9c'];
 const SKILL_EMOJI = { first_aid:'🩺', driving:'🚗', rescue:'⛑', logistics:'📦', communication:'📡', counseling:'💬' };
 
+function selectRole(role) {
+  selectedRole = role;
+  document.querySelectorAll('.role-card').forEach(card => {
+    card.classList.toggle('selected', card.dataset.role === role);
+  });
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-email').placeholder = role === 'ngo' ? 'ngo@example.org' : 'volunteer@example.org';
+  document.getElementById('login-name').placeholder = role === 'ngo' ? 'Organization or coordinator name' : 'Volunteer name';
+  document.getElementById('volunteer-skills-row').classList.toggle('hidden', role !== 'volunteer' || authMode === 'login');
+}
+
+function setAuthMode(mode) {
+  authMode = mode;
+  document.getElementById('signup-tab').classList.toggle('active', mode === 'signup');
+  document.getElementById('login-tab').classList.toggle('active', mode === 'login');
+  document.getElementById('auth-submit').textContent = mode === 'signup' ? 'Signup' : 'Login';
+  document.getElementById('auth-subtitle').textContent = mode === 'signup'
+    ? 'Create an account to start saving your session'
+    : 'Existing users can enter name and password';
+  document.getElementById('login-email-row').classList.toggle('hidden', mode === 'login');
+  document.getElementById('login-name-label').textContent = selectedRole === 'ngo' ? 'NGO name' : 'Volunteer name';
+  selectRole(selectedRole);
+}
+
+function login(event) {
+  event.preventDefault();
+  const name = document.getElementById('login-name').value.trim();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  if (!name || !password) {
+    document.getElementById('login-error').textContent = 'Enter name and password to continue.';
+    return;
+  }
+
+  currentRole = selectedRole === 'ngo' ? 'ngo' : 'volunteer';
+  currentUserEmail = email || null;
+
+  if (currentRole === 'ngo') {
+    let ngo = allNgos.find(n => n.name.toLowerCase() === name.toLowerCase());
+    if (authMode === 'login') {
+      if (!ngo || ngo.password !== password) {
+        document.getElementById('login-error').textContent = 'NGO not found or password is incorrect.';
+        return;
+      }
+    } else {
+      if (ngo) {
+        document.getElementById('login-error').textContent = 'This NGO already exists. Use Login.';
+        return;
+      }
+      ngo = { id: Date.now(), name, email, password, created_at: new Date().toLocaleString() };
+      allNgos.push(ngo);
+      saveState();
+    }
+    currentNgoId = ngo.id;
+    loggedInVolunteerId = null;
+  } else {
+    let volunteer = allVolunteers.find(v => v.name.toLowerCase() === name.toLowerCase());
+    if (authMode === 'login') {
+      if (!volunteer || volunteer.password !== password) {
+        document.getElementById('login-error').textContent = 'Volunteer not found or password is incorrect.';
+        return;
+      }
+    } else {
+      const skills = getSelectedLoginSkills();
+      if (!skills.length) {
+        document.getElementById('login-error').textContent = 'Select at least one skill before signing up as a volunteer.';
+        return;
+      }
+      if (volunteer) {
+        document.getElementById('login-error').textContent = 'This volunteer already exists. Use Login.';
+        return;
+      }
+      volunteer = {
+        id: Date.now(),
+        name,
+        email,
+        password,
+        skills: skills.join(','),
+        latitude: 12.9716,
+        longitude: 77.5946,
+        available: true
+      };
+      allVolunteers.push(volunteer);
+      saveState();
+    }
+    loggedInVolunteerId = volunteer.id;
+    currentNgoId = null;
+    if (autoAssignWaitingTasksForVolunteer(volunteer)) {
+      saveState();
+    }
+  }
+
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('ngo-dashboard').classList.toggle('hidden', currentRole !== 'ngo');
+  document.getElementById('volunteer-dashboard').classList.toggle('hidden', currentRole !== 'volunteer');
+  renderAll();
+}
+
+function logout() {
+  currentRole = null;
+  currentNgoId = null;
+  loggedInVolunteerId = null;
+  currentUserEmail = null;
+  selectedRole = 'ngo';
+  selectRole('ngo');
+  document.getElementById('login-name').value = '';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('ngo-dashboard').classList.add('hidden');
+  document.getElementById('volunteer-dashboard').classList.add('hidden');
+}
+
+function setPage() {}
+
+function setVolunteerView(view, el) {
+  currentVolunteerView = view;
+  document.querySelectorAll('.volunteer-nav').forEach(item => item.classList.remove('active'));
+  if (el) el.classList.add('active');
+  updateVolunteerSections();
+}
+
+function updateVolunteerSections() {
+  document.querySelectorAll('.volunteer-section').forEach(section => {
+    section.classList.toggle('hidden', section.dataset.volunteerView !== currentVolunteerView);
+  });
+}
+
+function renderSkillControls() {
+  const loginSkills = document.getElementById('login-skills');
+  if (loginSkills) {
+    loginSkills.innerHTML = SKILL_OPTIONS.map(skill => `
+      <label class="skill-check">
+        <input type="checkbox" value="${skill.value}" />
+        ${skill.label}
+      </label>
+    `).join('');
+  }
+  const taskSkill = document.getElementById('f-skill');
+  if (taskSkill) {
+    taskSkill.innerHTML = SKILL_OPTIONS.map(skill => `<option value="${skill.value}">${skill.label}</option>`).join('');
+  }
+}
+
+function getSelectedLoginSkills() {
+  return [...document.querySelectorAll('#login-skills input:checked')].map(input => input.value);
+}
+
+function skillLabel(skill) {
+  const option = SKILL_OPTIONS.find(s => s.value === skill);
+  return option ? option.label : skill.replace('_',' ');
+}
+
 // ── Render Tasks ─────────────────────────────────────────
 function renderTasks() {
   const list = document.getElementById('task-list');
-  let tasks = allTasks;
-  if (currentFilter !== 'all') tasks = tasks.filter(t => t.status === currentFilter);
+  let tasks = currentRole === 'ngo' && currentNgoId ? allTasks.filter(t => t.ngoId === currentNgoId) : allTasks;
+  if (currentFilter === 'assigned') tasks = tasks.filter(t => ['invite_pending','assigned','in_progress'].includes(t.status));
+  else if (currentFilter !== 'all') tasks = tasks.filter(t => t.status === currentFilter);
   tasks = [...tasks].sort((a,b) => b.priority_score - a.priority_score);
 
   if (!tasks.length) {
@@ -585,6 +1015,8 @@ function renderTasks() {
   list.innerHTML = tasks.map((task, i) => {
     const pc  = priorityClass(task.priority_score);
     const vol = task.assigned_to ? allVolunteers.find(v => v.id === task.assigned_to) : null;
+    const invitedCount = (task.invited_to || []).length;
+    const acceptedCount = (task.accepted_by || []).length;
     return `
     <div class="task-card" style="animation-delay:${i*0.04}s" onclick="taskDetail(${task.id})">
       <div class="priority-bar p-${pc}"></div>
@@ -595,11 +1027,14 @@ function renderTasks() {
           <span>Urgency ${task.urgency}/5</span>
           <span>⚠ ${task.lives_at_risk} lives</span>
           ${vol ? `<span>👤 ${vol.name}</span>` : ''}
+          ${task.invite_message ? `<span>${task.invite_message}</span>` : ''}
+          <span>Requests ${invitedCount}</span>
+          <span>Accepted ${acceptedCount}</span>
         </div>
       </div>
       <div class="task-right">
         <div class="score-badge score-${pc}">${(task.priority_score*100).toFixed(0)}</div>
-        <div class="status-tag s-${task.status}">${task.status}</div>
+        <div class="status-tag s-${task.status}">${task.status.replace('_',' ')}</div>
       </div>
     </div>`;
   }).join('');
@@ -620,12 +1055,14 @@ function renderVolunteers() {
   list.innerHTML = allVolunteers.map((v, i) => {
     const initials = v.name.split(' ').map(w=>w[0]).join('').slice(0,2);
     const color = AVATARS[i % AVATARS.length];
+    const assigned = allTasks.find(t => t.assigned_to === v.id && t.status !== 'done');
     return `
     <div class="vol-item">
       <div class="vol-avatar" style="background:${color}20;color:${color}">${initials}</div>
       <div>
         <div class="vol-name">${v.name}</div>
-        <div class="vol-meta">${v.skills.replace(/,/g,' · ')}</div>
+        <div class="vol-meta">${v.skills.split(',').map(skillLabel).join(' · ')}</div>
+        <div class="vol-meta">Task: ${assigned ? assigned.title : 'Unassigned'}</div>
       </div>
       <div class="vol-status">
         <div class="avail-dot ${v.available?'free':'busy'}" title="${v.available?'Available':'On task'}"></div>
@@ -636,13 +1073,14 @@ function renderVolunteers() {
 
 // ── Render Stats ─────────────────────────────────────────
 function renderStats() {
+  const visibleTasks = currentRole === 'ngo' && currentNgoId ? allTasks.filter(t => t.ngoId === currentNgoId) : allTasks;
   const avail    = allVolunteers.filter(v => v.available).length;
-  const pending  = allTasks.filter(t => t.status === 'pending').length;
-  const assigned = allTasks.filter(t => t.status === 'assigned').length;
-  const critical = allTasks.filter(t => t.priority_score >= 0.8).length;
+  const pending  = visibleTasks.filter(t => t.status === 'pending').length;
+  const assigned = visibleTasks.filter(t => ['invite_pending','assigned','in_progress'].includes(t.status)).length;
+  const critical = visibleTasks.filter(t => t.priority_score >= 0.8).length;
 
   document.getElementById('stat-volunteers').textContent  = allVolunteers.length;
-  document.getElementById('stat-tasks').textContent       = allTasks.filter(t => t.status !== 'done').length;
+  document.getElementById('stat-tasks').textContent       = visibleTasks.filter(t => t.status !== 'done').length;
   document.getElementById('stat-critical').textContent    = critical;
   document.getElementById('stat-assigned').textContent    = assigned;
   document.getElementById('stat-avail-delta').textContent = `${avail} available`;
@@ -666,10 +1104,15 @@ function renderSuggestions() {
       ${s.message}
       <div class="sug-action">
         <button class="sug-btn apply" onclick="applySuggestion('${s.action}', ${JSON.stringify(s.payload).replace(/"/g,'&quot;')})">Apply</button>
-        <button class="sug-btn dismiss" onclick="this.closest('.suggestion').remove()">Dismiss</button>
+        <button class="sug-btn dismiss" onclick="dismissSuggestion('${s.id}')">Dismiss</button>
       </div>
     </div>
   `).join('');
+}
+
+function dismissSuggestion(id) {
+  dismissedSuggestionIds.push(id);
+  renderSuggestions();
 }
 
 function generateSuggestions() {
@@ -677,10 +1120,23 @@ function generateSuggestions() {
   const criticalPending = allTasks.filter(t => t.status === 'pending' && t.priority_score >= 0.8);
   const freeVols = allVolunteers.filter(v => v.available);
 
+  allTasks.filter(t => t.status === 'invite_pending').forEach(task => {
+    const invited = allVolunteers.find(v => v.id === task.assigned_to);
+    if (invited) {
+      suggestions.push({
+        id: `invite-${task.id}`,
+        message: `<strong>Invite pending:</strong> ${invited.name} has been invited to "${task.title}" and needs to accept before work starts.`,
+        action: 'alert',
+        payload: {}
+      });
+    }
+  });
+
   criticalPending.forEach(task => {
     const match = freeVols.find(v => v.skills.includes(task.required_skill));
     if (match) {
       suggestions.push({
+        id: `match-${task.id}-${match.id}`,
         message: `<strong>Critical task unassigned:</strong> "${task.title}" needs a ${task.required_skill.replace('_',' ')} volunteer. <strong>${match.name}</strong> is available and matches.`,
         action: 'assign',
         payload: { taskId: task.id, volId: match.id }
@@ -691,6 +1147,7 @@ function generateSuggestions() {
   const overloaded = allVolunteers.filter(v => !v.available);
   if (overloaded.length === allVolunteers.length && criticalPending.length) {
     suggestions.push({
+      id: 'overloaded',
       message: `<strong>All volunteers are busy.</strong> ${criticalPending.length} critical task(s) remain unassigned. Consider recruiting more first-aid or rescue volunteers.`,
       action: 'alert',
       payload: {}
@@ -703,6 +1160,7 @@ function generateSuggestions() {
     const nextPending = allTasks.find(t => t.status === 'pending');
     if (nextPending) {
       suggestions.push({
+        id: `redeploy-${nextPending.id}`,
         message: `<strong>Volunteers freed up.</strong> "${nextPending.title}" is next in priority queue. Re-run assignment to redeploy.`,
         action: 'reassign',
         payload: {}
@@ -710,7 +1168,7 @@ function generateSuggestions() {
     }
   }
 
-  return suggestions.slice(0, 3);
+  return suggestions.filter(s => !dismissedSuggestionIds.includes(s.id)).slice(0, 3);
 }
 
 function applySuggestion(action, payload) {
@@ -718,11 +1176,10 @@ function applySuggestion(action, payload) {
     const task = allTasks.find(t => t.id === payload.taskId);
     const vol  = allVolunteers.find(v => v.id === payload.volId);
     if (task && vol) {
-      task.status = 'assigned';
-      task.assigned_to = vol.id;
-      vol.available = false;
+      inviteVolunteer(task, vol);
+      saveState();
       renderAll();
-      toast(`Assigned ${vol.name} to "${task.title}"`, 'success');
+      toast(`Invite sent to ${vol.name} for "${task.title}"`, 'success');
     }
   }
   if (action === 'reassign') {
@@ -741,18 +1198,36 @@ function triggerReassign() {
 
   let assigned = 0;
   pending.forEach(task => {
-    const freeVols = allVolunteers.filter(v => v.available && v.skills.includes(task.required_skill));
-    if (freeVols.length) {
-      const best = freeVols[0]; // first match (extend with proximity scoring)
-      task.status = 'assigned';
-      task.assigned_to = best.id;
-      best.available = false;
-      assigned++;
-    }
+    if (autoAssignTask(task)) assigned++;
   });
 
   renderAll();
-  toast(`Re-assignment complete. ${assigned} new assignment(s) made.`, 'success');
+  saveState();
+  toast(`Re-assignment complete. ${assigned} invite(s) sent.`, 'success');
+}
+
+function inviteVolunteer(task, volunteer) {
+  task.status = 'invite_pending';
+  task.invited_to = task.invited_to || [];
+  task.accepted_by = task.accepted_by || [];
+  if (!task.invited_to.includes(volunteer.id)) task.invited_to.push(volunteer.id);
+  task.invited_at = new Date().toLocaleString();
+  task.invite_message = `Invite sent to ${task.invited_to.length} volunteer(s)`;
+}
+
+function autoAssignTask(task) {
+  const matches = allVolunteers.filter(v => v.available && v.skills.split(',').includes(task.required_skill));
+  matches.forEach(volunteer => inviteVolunteer(task, volunteer));
+  return matches.length > 0;
+}
+
+function autoAssignWaitingTasksForVolunteer(volunteer) {
+  if (!volunteer.available) return false;
+  const matches = [...allTasks]
+    .filter(t => t.status === 'pending' && volunteer.skills.split(',').includes(t.required_skill))
+    .sort((a,b) => b.priority_score - a.priority_score);
+  matches.forEach(task => inviteVolunteer(task, volunteer));
+  return matches.length > 0;
 }
 
 // ── Modal ─────────────────────────────────────────────────
@@ -776,28 +1251,24 @@ async function submitTask() {
   const priority_score = Math.round((urgency/5*0.5 + Math.min(lives/100,1)*0.3 + 0.2) * 1000) / 1000;
   const newTask = {
     id: Date.now(),
+    ngoId: currentNgoId,
     title, required_skill: skill, urgency, lives_at_risk: lives,
     latitude: lat, longitude: lon,
-    status: 'pending', assigned_to: null, priority_score
+    status: 'pending', assigned_to: null, priority_score,
+    invited_to: [], accepted_by: [], created_at: new Date().toLocaleString()
   };
 
-  // Try API, fall back to local
-  try {
-    const res = await fetch(`${API}/tasks`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, required_skill:skill, urgency, lives_at_risk:lives, latitude:lat, longitude:lon })
-    });
-    const data = await res.json();
-    allTasks.push(data);
-  } catch {
-    allTasks.push(newTask);
-  }
+  allTasks.push(newTask);
+  const invited = autoAssignTask(newTask);
 
   closeModal();
   document.getElementById('f-title').value = '';
+  saveState();
   renderAll();
-  toast(`Task "${title}" created (priority ${(priority_score*100).toFixed(0)})`, 'success');
+  toast(invited
+    ? `Task "${title}" created and matching volunteer invite sent.`
+    : `Task "${title}" created. No available volunteer has ${skillLabel(skill)} yet.`,
+    invited ? 'success' : 'error');
 }
 
 // ── Filter tabs ───────────────────────────────────────────
@@ -814,21 +1285,266 @@ function taskDetail(id) {
 }
 
 // ── Load data ─────────────────────────────────────────────
-async function loadData() {
-  try {
-    const [tRes, vRes] = await Promise.all([
-      fetch(`${API}/assignments`),
-      fetch(`${API}/volunteers`)
-    ]);
-    allTasks      = await tRes.json();
-    allVolunteers = await vRes.json();
-    toast('Data refreshed from API', 'success');
-  } catch {
-    // Use mock data if API offline
-    allTasks      = [...MOCK_TASKS];
-    allVolunteers = [...MOCK_VOLUNTEERS];
+function getLoggedInVolunteer() {
+  return allVolunteers.find(v => v.id === loggedInVolunteerId) || null;
+}
+
+function getMyActiveTask() {
+  const volunteer = getLoggedInVolunteer();
+  if (!volunteer) return null;
+  return allTasks.find(t =>
+    (t.assigned_to === volunteer.id || (t.status === 'invite_pending' && (t.invited_to || []).includes(volunteer.id))) &&
+    t.status !== 'done' &&
+    t.status !== 'declined'
+  );
+}
+
+function volunteerStatusLabel(status) {
+  if (status === 'invite_pending') return 'Invite Pending';
+  if (status === 'in_progress') return 'In Progress';
+  if (status === 'done') return 'Done';
+  return 'Pending';
+}
+
+function renderVolunteerDashboard() {
+  if (currentRole !== 'volunteer') return;
+  renderMyTask();
+  renderMyProfile();
+  renderNearbyTasks();
+  renderActivityLog();
+  updateVolunteerSections();
+}
+
+function renderMyTask() {
+  const card = document.getElementById('my-task-card');
+  const task = getMyActiveTask();
+  if (!task) {
+    card.innerHTML = `
+      <div class="panel-meta">My Assigned Task</div>
+      <div class="empty" style="padding:34px 12px"><div class="empty-icon">+</div><p>No task assigned yet</p></div>
+    `;
+    return;
   }
+  card.innerHTML = `
+    <div class="panel-meta">My Assigned Task</div>
+    <div class="assigned-title">${task.title}</div>
+    <div class="assigned-meta">
+      <span class="info-pill">Location ${task.latitude.toFixed(4)}, ${task.longitude.toFixed(4)}</span>
+      <span class="info-pill">Urgency ${priorityLabel(task.priority_score)}</span>
+      <span class="info-pill">${skillLabel(task.required_skill)}</span>
+      <span class="status-tag s-${task.status}">${volunteerStatusLabel(task.status)}</span>
+    </div>
+    ${task.status === 'invite_pending' ? `
+      <div class="suggestion" style="margin-bottom:16px">
+        Automatic invite: this task matches your ${skillLabel(task.required_skill)} skill. Accept to start working on it.
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="acceptMyInvite()">Accept Invite</button>
+        <button class="btn" onclick="declineMyInvite()">Decline</button>
+      </div>
+    ` : `
+      <div class="topbar-actions">
+        <button class="btn" onclick="markMyTaskInProgress()">Mark In Progress</button>
+        <button class="btn btn-primary" onclick="markMyTaskComplete()">Mark Complete</button>
+      </div>
+    `}
+  `;
+}
+
+function renderMyProfile() {
+  const volunteer = getLoggedInVolunteer();
+  const panel = document.getElementById('profile-panel');
+  if (!volunteer) {
+    panel.innerHTML = '<div class="empty"><p>No volunteer profile found.</p></div>';
+    return;
+  }
+  const activeTask = getMyActiveTask();
+  const assignedCount = allTasks.filter(t => t.assigned_to === volunteer.id && t.status !== 'done' && t.status !== 'declined').length;
+  const completedCount = volunteerActivityLog.filter(item => item.volunteerId === volunteer.id).length;
+  document.getElementById('profile-state').textContent = volunteer.available ? 'Available' : 'Unavailable';
+  panel.innerHTML = `
+    <div class="profile-summary">
+      <div class="profile-row">
+        <div>
+          <div class="vol-name" style="font-size:18px">${volunteer.name}</div>
+          <div class="vol-meta">${volunteer.email || currentUserEmail || 'Session volunteer'}</div>
+          <div class="skill-tags">
+            ${volunteer.skills.split(',').map(skill => `<span class="skill-tag">${skillLabel(skill)}</span>`).join('')}
+          </div>
+        </div>
+        <label class="switch" title="Availability">
+          <input type="checkbox" ${volunteer.available ? 'checked' : ''} onchange="toggleMyAvailability(this.checked)" />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="profile-stats">
+        <div class="mini-stat">
+          <div class="mini-stat-value">${assignedCount}</div>
+          <div class="mini-stat-label">Assigned</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-value">${completedCount}</div>
+          <div class="mini-stat-label">Completed</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-value">${volunteer.skills.split(',').length}</div>
+          <div class="mini-stat-label">Skills</div>
+        </div>
+      </div>
+      <div class="nearby-row">
+        <div>
+          <div class="row-title">${activeTask ? activeTask.title : 'No active assignment'}</div>
+          <div class="row-meta">${activeTask ? volunteerStatusLabel(activeTask.status) : 'Available for matching tasks'}</div>
+        </div>
+        <div class="skill-tags">
+          <span class="skill-tag">${volunteer.available ? 'available' : 'busy'}</span>
+        </div>
+      </div>
+      <div class="profile-skill-editor">
+        <div class="form-label">Add skills</div>
+        <div class="checkbox-grid">
+          ${SKILL_OPTIONS.map(skill => `
+            <label class="skill-check">
+              <input type="checkbox" value="${skill.value}" ${(volunteer.skills || '').split(',').includes(skill.value) ? 'checked' : ''} onchange="updateMySkills()" />
+              ${skill.label}
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function updateMySkills() {
+  const volunteer = getLoggedInVolunteer();
+  if (!volunteer) return;
+  const checked = [...document.querySelectorAll('#profile-panel .skill-check input:checked')].map(input => input.value);
+  if (!checked.length) {
+    toast('Keep at least one skill on your profile.', 'error');
+    renderMyProfile();
+    return;
+  }
+  volunteer.skills = checked.join(',');
+  autoAssignWaitingTasksForVolunteer(volunteer);
+  saveState();
   renderAll();
+}
+
+function renderNearbyTasks() {
+  const list = document.getElementById('nearby-list');
+  const nearby = [...allTasks]
+    .filter(t => t.status === 'pending')
+    .sort((a,b) => b.priority_score - a.priority_score)
+    .slice(0, 3);
+  if (!nearby.length) {
+    list.innerHTML = '<div class="empty"><p>No pending tasks nearby.</p></div>';
+    return;
+  }
+  list.innerHTML = nearby.map(task => {
+    const pc = priorityClass(task.priority_score);
+    return `
+      <div class="nearby-row">
+        <div>
+          <div class="row-title">${task.title}</div>
+          <div class="row-meta">${skillLabel(task.required_skill)}</div>
+        </div>
+        <span class="score-badge score-${pc}">${priorityLabel(task.priority_score)}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderActivityLog() {
+  const list = document.getElementById('activity-list');
+  const volunteer = getLoggedInVolunteer();
+  const myLog = volunteer ? volunteerActivityLog.filter(item => item.volunteerId === volunteer.id) : [];
+  document.getElementById('activity-count').textContent = `${myLog.length} complete`;
+  if (!myLog.length) {
+    list.innerHTML = '<div class="empty"><p>No completed task activity yet.</p></div>';
+    return;
+  }
+  list.innerHTML = myLog.map(item => `
+    <div class="activity-row">
+      <div>
+        <div class="row-title">${item.title}</div>
+        <div class="row-meta">${item.timestamp}</div>
+      </div>
+      <span class="status-tag s-done">Done</span>
+    </div>
+  `).join('');
+}
+
+function toggleMyAvailability(available) {
+  const volunteer = getLoggedInVolunteer();
+  if (!volunteer) return;
+  if (available && getMyActiveTask()) {
+    toast('Finish or decline your current task before becoming available.', 'error');
+    renderMyProfile();
+    return;
+  }
+  volunteer.available = available;
+  saveState();
+  renderAll();
+}
+
+function acceptMyInvite() {
+  const task = getMyActiveTask();
+  const volunteer = getLoggedInVolunteer();
+  if (!task || !volunteer || task.status !== 'invite_pending') return;
+  task.accepted_by = task.accepted_by || [];
+  if (!task.accepted_by.includes(volunteer.id)) task.accepted_by.push(volunteer.id);
+  if (!task.assigned_to) task.assigned_to = volunteer.id;
+  task.status = 'assigned';
+  task.invite_message = `${task.accepted_by.length} accepted of ${(task.invited_to || []).length} requested`;
+  volunteer.available = false;
+  saveState();
+  renderAll();
+  toast(`Accepted "${task.title}". You can start work now.`, 'success');
+}
+
+function declineMyInvite() {
+  const task = getMyActiveTask();
+  const volunteer = getLoggedInVolunteer();
+  if (!task || task.status !== 'invite_pending' || !volunteer) return;
+  task.status = 'pending';
+  task.invited_to = (task.invited_to || []).filter(id => id !== volunteer.id);
+  task.accepted_by = (task.accepted_by || []).filter(id => id !== volunteer.id);
+  if (task.assigned_to === volunteer.id) task.assigned_to = null;
+  task.invite_message = `${volunteer.name} declined invite`;
+  volunteer.available = true;
+  saveState();
+  renderAll();
+  toast(`Declined "${task.title}". It is back in the NGO queue.`, 'error');
+}
+
+function markMyTaskInProgress() {
+  const task = getMyActiveTask();
+  if (!task || task.status === 'invite_pending') return;
+  task.status = 'in_progress';
+  const volunteer = getLoggedInVolunteer();
+  if (volunteer) volunteer.available = false;
+  saveState();
+  renderAll();
+}
+
+function markMyTaskComplete() {
+  const task = getMyActiveTask();
+  const volunteer = getLoggedInVolunteer();
+  if (!task || !volunteer || task.status === 'invite_pending') return;
+  task.status = 'done';
+  volunteer.available = true;
+  volunteerActivityLog.unshift({
+    volunteerId: volunteer.id,
+    title: task.title,
+    timestamp: new Date().toLocaleString()
+  });
+  saveState();
+  renderAll();
+}
+
+async function loadData() {
+  renderAll();
+  toast('Live dashboard refreshed', 'success');
 }
 
 function renderAll() {
@@ -836,24 +1552,19 @@ function renderAll() {
   renderTasks();
   renderVolunteers();
   renderSuggestions();
+  renderVolunteerDashboard();
 }
 
 // ── WebSocket live connection ─────────────────────────────
 function connectWS() {
-  try {
-    ws = new WebSocket(`ws://${API.replace('http://','')}/live`);
-    ws.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      if (data.tasks)      allTasks      = data.tasks;
-      if (data.volunteers) allVolunteers = data.volunteers;
-      renderAll();
-    };
-    ws.onerror = () => {}; // silent fail when API offline
-  } catch {}
+  renderAll();
 }
 
 // ── Init ──────────────────────────────────────────────────
-loadData();
+loadState();
+renderSkillControls();
+setAuthMode('signup');
+renderAll();
 connectWS();
 setInterval(renderSuggestions, 30000); // refresh suggestions every 30s
 </script>
