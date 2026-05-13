@@ -4,12 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ReliefOps — Volunteer Command Center</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <title>ReliefOps - Volunteer Command Center</title>
+  <meta name="theme-color" content="#0a0c10" />
+  <link rel="manifest" href="./manifest.webmanifest" />
   <style>
     :root {
       --bg: #0a0c10;
@@ -27,8 +24,8 @@
       --amber-soft: rgba(245, 158, 11, 0.12);
       --green-soft: rgba(34, 211, 160, 0.12);
       --blue-soft: rgba(59, 130, 246, 0.12);
-      --mono: 'DM Mono', monospace;
-      --sans: 'Sora', sans-serif;
+      --mono: Consolas, 'Liberation Mono', monospace;
+      --sans: Inter, Segoe UI, Arial, sans-serif;
       --radius: 10px;
       --radius-lg: 16px;
     }
@@ -776,6 +773,88 @@
       margin-bottom: 16px;
     }
 
+    .offline-map {
+      position: relative;
+      min-height: 250px;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      margin-top: 8px;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px),
+        radial-gradient(circle at 50% 50%, rgba(34,211,160,.18), transparent 34%),
+        var(--surface2);
+      background-size: 28px 28px, 28px 28px, 100% 100%, 100% 100%;
+      cursor: crosshair;
+    }
+
+    .offline-map::after {
+      content: "Offline coordinate picker";
+      position: absolute;
+      left: 12px;
+      bottom: 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      pointer-events: none;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .offline-map.view-only {
+      cursor: default;
+      min-height: 300px;
+    }
+
+    .map-pin {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 18px;
+      height: 18px;
+      border-radius: 50% 50% 50% 0;
+      background: var(--danger);
+      border: 2px solid #fff;
+      box-shadow: 0 10px 28px rgba(239, 68, 68, .35);
+      transform: translate(-50%, -100%) rotate(-45deg);
+      pointer-events: none;
+    }
+
+    .map-pin::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .map-crosshair {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 120px;
+      height: 120px;
+      border: 1px solid rgba(34, 211, 160, .35);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .map-readout {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      padding: 6px 8px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: rgba(10, 12, 16, .78);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      pointer-events: none;
+    }
+
     .modal-footer {
       display: flex;
       gap: 10px;
@@ -1293,6 +1372,12 @@
       .profile-stats {
         grid-template-columns: 1fr;
       }
+
+      .modal {
+        width: calc(100vw - 32px);
+        max-height: calc(100vh - 32px);
+        overflow-y: auto;
+      }
     }
   </style>
 </head>
@@ -1623,11 +1708,25 @@
       </div>
       <div class="form-row" style="position: relative;">
         <label class="form-label">Location</label>
-        <input class="form-input" id="location-search" placeholder="Search address..." autocomplete="off" />
-        <div id="suggestions"
-          style="position:absolute; top:calc(100% - 10px); left:0; right:0; background:var(--surface); z-index:1000; border:1px solid var(--border); border-radius:var(--radius); max-height:150px; overflow-y:auto; display:none;">
+        <input class="form-input" id="location-search" placeholder="Location label or address" autocomplete="off" />
+        <div class="form-row-2" style="margin-top: 10px;">
+          <div class="form-row" style="margin:0">
+            <label class="form-label">Latitude</label>
+            <input class="form-input" id="f-latitude" type="number" min="-90" max="90" step="0.00001" value="12.97160" />
+          </div>
+          <div class="form-row" style="margin:0">
+            <label class="form-label">Longitude</label>
+            <input class="form-input" id="f-longitude" type="number" min="-180" max="180" step="0.00001" value="77.59460" />
+          </div>
         </div>
-        <div id="task-map" style="height: 250px; width: 100%; border-radius: 10px; margin-top: 8px;"></div>
+        <div id="suggestions"
+          style="display:none;">
+        </div>
+        <div class="offline-map" id="task-map" role="application" aria-label="Offline coordinate picker">
+          <div class="map-crosshair"></div>
+          <div class="map-pin" id="task-map-pin"></div>
+          <div class="map-readout" id="task-map-readout">12.97160, 77.59460</div>
+        </div>
         <div id="address-display"
           style="color: #22d3a0; font-family: var(--mono); font-size: 11px; margin-top: 8px; padding: 6px; background: var(--green-soft); border-radius: var(--radius);">
           📍 No location selected</div>
@@ -1643,14 +1742,18 @@
   <div class="modal-overlay" id="view-location-modal">
     <div class="modal">
       <div class="modal-title">📍 Task Location</div>
-      <div id="view-map" style="height: 300px; width: 100%; border-radius: 10px;"></div>
+      <div class="offline-map view-only" id="view-map">
+        <div class="map-crosshair"></div>
+        <div class="map-pin" id="view-map-pin"></div>
+        <div class="map-readout" id="view-map-readout"></div>
+      </div>
       <div id="view-address"
         style="color: var(--text); font-family: var(--mono); font-size: 12px; margin-top: 12px; margin-bottom: 20px; text-align: center;">
       </div>
       <div class="modal-footer">
         <button class="btn"
           onclick="document.getElementById('view-location-modal').classList.remove('open')">Close</button>
-        <a class="btn btn-primary" id="google-maps-link" href="#" target="_blank">Open in Google Maps →</a>
+        <button class="btn btn-primary" id="copy-location-btn" type="button" onclick="copyViewedLocation()">Copy Coordinates</button>
       </div>
     </div>
   </div>
@@ -1659,132 +1762,88 @@
   <div class="toast-container" id="toasts"></div>
 
   <script>
-    // ── Geoapify Map Config ─────────────────────────────────
-    const GEOAPIFY_KEY = 'API_KEY_HERE'; // Replace with your Geoapify API key
-    let createMap = null;
-    let createMarker = null;
-    let viewMap = null;
-    let viewMarker = null;
+    // Offline map and app state
+    let createMapReady = false;
+    let viewedLocation = null;
     let selectedTaskLat = 12.9716;
     let selectedTaskLng = 77.5946;
     let selectedTaskAddress = '';
-    let searchTimeout = null;
 
     function initCreateMap() {
-      if (!createMap) {
-        createMap = L.map('task-map').setView([12.9716, 77.5946], 13);
-        L.tileLayer(`https://maps.geoapify.com/v1/tile/dark-matter/{z}/{x}/{y}.png?apiKey=${GEOAPIFY_KEY}`, {
-          attribution: '© Geoapify © OpenStreetMap',
-          maxZoom: 20
-        }).addTo(createMap);
-
-        createMarker = L.marker([12.9716, 77.5946], { draggable: true }).addTo(createMap);
-
-        createMap.on('click', (e) => {
-          createMarker.setLatLng(e.latlng);
-          geocodeReverse(e.latlng.lat, e.latlng.lng);
-        });
-        createMarker.on('dragend', () => {
-          const pos = createMarker.getLatLng();
-          geocodeReverse(pos.lat, pos.lng);
-        });
-      }
+      if (createMapReady) return;
+      const map = document.getElementById('task-map');
+      map.addEventListener('click', event => {
+        const rect = map.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+        const lat = 90 - y * 180;
+        const lng = x * 360 - 180;
+        setSelectedLocation(lat, lng);
+      });
+      createMapReady = true;
+      setSelectedLocation(selectedTaskLat, selectedTaskLng);
     }
 
-    async function geocodeReverse(lat, lng) {
-      selectedTaskLat = lat;
-      selectedTaskLng = lng;
-      try {
-        const res = await fetch(`https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lng}&apiKey=${GEOAPIFY_KEY}`);
-        const data = await res.json();
-        if (data.features && data.features.length > 0) {
-          selectedTaskAddress = data.features[0].properties.formatted;
-          document.getElementById('address-display').innerHTML = `📍 ${selectedTaskAddress}`;
-        } else {
-          document.getElementById('address-display').innerHTML = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-          selectedTaskAddress = '';
-        }
-      } catch (err) {
-        console.error(err);
-      }
+    function clampCoordinate(value, min, max) {
+      return Math.max(min, Math.min(max, Number(value)));
+    }
+
+    function setSelectedLocation(lat, lng) {
+      selectedTaskLat = Number(clampCoordinate(lat, -90, 90).toFixed(5));
+      selectedTaskLng = Number(clampCoordinate(lng, -180, 180).toFixed(5));
+      const label = document.getElementById('location-search').value.trim();
+      selectedTaskAddress = label;
+      document.getElementById('f-latitude').value = selectedTaskLat.toFixed(5);
+      document.getElementById('f-longitude').value = selectedTaskLng.toFixed(5);
+      updateMapMarker('task', selectedTaskLat, selectedTaskLng);
+      document.getElementById('address-display').textContent =
+        label || `Coordinates: ${selectedTaskLat.toFixed(5)}, ${selectedTaskLng.toFixed(5)}`;
+    }
+
+    function syncLocationFromInputs() {
+      const latInput = document.getElementById('f-latitude');
+      const lngInput = document.getElementById('f-longitude');
+      if (latInput.value === '' || lngInput.value === '') return;
+      setSelectedLocation(Number(latInput.value), Number(lngInput.value));
     }
 
     document.getElementById('location-search').addEventListener('input', (e) => {
-      const query = e.target.value;
-      clearTimeout(searchTimeout);
-      if (!query) {
-        document.getElementById('suggestions').style.display = 'none';
-        return;
-      }
-      searchTimeout = setTimeout(async () => {
-        try {
-          const res = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&apiKey=${GEOAPIFY_KEY}&limit=5`);
-          const data = await res.json();
-          const sugDiv = document.getElementById('suggestions');
-          sugDiv.innerHTML = '';
-          if (data.features && data.features.length > 0) {
-            data.features.forEach(f => {
-              const div = document.createElement('div');
-              div.style.padding = '8px 12px';
-              div.style.cursor = 'pointer';
-              div.style.borderBottom = '1px solid var(--border2)';
-              div.style.fontSize = '12px';
-              div.textContent = f.properties.formatted;
-              div.onclick = () => {
-                const lat = f.properties.lat;
-                const lon = f.properties.lon;
-                createMap.setView([lat, lon], 16);
-                createMarker.setLatLng([lat, lon]);
-                geocodeReverse(lat, lon);
-                sugDiv.style.display = 'none';
-                document.getElementById('location-search').value = f.properties.formatted;
-              };
-              sugDiv.appendChild(div);
-            });
-            sugDiv.style.display = 'block';
-          } else {
-            sugDiv.style.display = 'none';
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      }, 400);
+      selectedTaskAddress = e.target.value.trim();
+      document.getElementById('address-display').textContent =
+        selectedTaskAddress || `Coordinates: ${selectedTaskLat.toFixed(5)}, ${selectedTaskLng.toFixed(5)}`;
     });
+    document.getElementById('f-latitude').addEventListener('change', syncLocationFromInputs);
+    document.getElementById('f-longitude').addEventListener('change', syncLocationFromInputs);
 
     function openViewLocationModal(lat, lng, address) {
+      viewedLocation = { lat, lng };
       document.getElementById('view-location-modal').classList.add('open');
-      document.getElementById('view-address').textContent = address || `Coordinates: ${lat}, ${lng}`;
-      document.getElementById('google-maps-link').href = `https://www.google.com/maps?q=${lat},${lng}`;
-
-      setTimeout(() => {
-        if (!viewMap) {
-          viewMap = L.map('view-map').setView([lat, lng], 15);
-          L.tileLayer(`https://maps.geoapify.com/v1/tile/dark-matter/{z}/{x}/{y}.png?apiKey=${GEOAPIFY_KEY}`, {
-            attribution: '© Geoapify © OpenStreetMap',
-            maxZoom: 20
-          }).addTo(viewMap);
-
-          const redIcon = new L.Icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-          });
-          viewMarker = L.marker([lat, lng], { icon: redIcon }).addTo(viewMap);
-          viewMarker.bindPopup(`<b>${address || 'Location'}</b>`).openPopup();
-        } else {
-          viewMap.invalidateSize();
-          viewMap.setView([lat, lng], 15);
-          viewMarker.setLatLng([lat, lng]);
-          viewMarker.setPopupContent(`<b>${address || 'Location'}</b>`).openPopup();
-        }
-      }, 350);
+      document.getElementById('view-address').textContent =
+        address || `Coordinates: ${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
+      updateMapMarker('view', lat, lng);
     }
-    // ── Config ──────────────────────────────────────────────
-    const API = 'http://localhost:8000';
-    let ws = null;
+
+    function updateMapMarker(scope, lat, lng) {
+      const pin = document.getElementById(`${scope}-map-pin`);
+      const readout = document.getElementById(`${scope}-map-readout`);
+      if (!pin || !readout) return;
+      const left = ((clampCoordinate(lng, -180, 180) + 180) / 360) * 100;
+      const top = ((90 - clampCoordinate(lat, -90, 90)) / 180) * 100;
+      pin.style.left = `${left}%`;
+      pin.style.top = `${top}%`;
+      readout.textContent = `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
+    }
+
+    async function copyViewedLocation() {
+      if (!viewedLocation) return;
+      const coords = `${Number(viewedLocation.lat).toFixed(5)}, ${Number(viewedLocation.lng).toFixed(5)}`;
+      try {
+        await navigator.clipboard.writeText(coords);
+        toast('Coordinates copied', 'success');
+      } catch {
+        toast(coords, 'success');
+      }
+    }
     let allNgos = [];
     let allTasks = [];
     let allVolunteers = [];
@@ -2272,7 +2331,7 @@
       document.getElementById('modal-overlay').classList.add('open');
       setTimeout(() => {
         initCreateMap();
-        if (createMap) createMap.invalidateSize();
+        setSelectedLocation(selectedTaskLat, selectedTaskLng);
       }, 350);
     }
     function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
@@ -2286,10 +2345,15 @@
       const skill = document.getElementById('f-skill').value;
       const urgency = parseInt(document.getElementById('f-urgency').value);
       const lives = parseInt(document.getElementById('f-lives').value);
+      syncLocationFromInputs();
       const lat = selectedTaskLat;
       const lon = selectedTaskLng;
 
       if (!title) { toast('Please enter a task title', 'error'); return; }
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        toast('Enter valid latitude and longitude values', 'error');
+        return;
+      }
 
       const newTask = {
         id: Date.now(),
@@ -2606,7 +2670,15 @@
       renderAll();
     }
 
+    function registerOfflineWorker() {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.register('./service-worker.js').catch(err => {
+        console.warn('Offline cache registration failed', err);
+      });
+    }
+
     // ── Init ──────────────────────────────────────────────────
+    registerOfflineWorker();
     loadState();
     renderSkillControls();
     setAuthMode('signup');
